@@ -1,0 +1,25 @@
+{
+  "name": "library-management-backend",
+  "version": "1.0.0",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "nodemon server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mahdishahy/library-management-backend.git"
+  },
+  "keywords": [],
+  "author": "mahdi shahy",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/mahdishahy/library-management-backend/issues"
+  },
+  "homepage": "https://github.com/mahdishahy/library-management-backend#readme",
+  "description": "",
+  "dependencies": {
+    "@types/node": "^22.10.10",
+    "nodemon": "^3.1.9"
+  }
+}
