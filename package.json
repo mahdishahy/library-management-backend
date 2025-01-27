@@ -18,8 +18,12 @@
   },
   "homepage": "https://github.com/mahdishahy/library-management-backend#readme",
   "description": "",
-  "dependencies": {
+  "devDependencies": {
     "@types/node": "^22.10.10",
     "nodemon": "^3.1.9"
+  },
+  "dependencies": {
+    "dotenv": "^16.4.7",
+    "mongodb": "^6.12.0"
   }
 }
