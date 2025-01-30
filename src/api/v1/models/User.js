@@ -11,9 +11,26 @@ const find = async () => {
 
 const findById = async (id) => {
     const database = await connect()
-    const userController = database.collection("users")
-    const user = await userController.findOne({ _id: new ObjectId(id) })
+    const usersCollection = database.collection("users")
+    const user = await usersCollection.findOne({ _id: new ObjectId(id) })
     return user
 }
 
-module.exports = { find, findById }
+const update = async (id, updateData) => {
+    try {
+        const database = await connect()
+        const usersCollection = database.collection('users')
+        const filter = { _id: new ObjectId(id) }
+        const update = { $set: updateData }
+        const updateUserResult = await usersCollection.updateOne(filter, update)
+        if (updateUserResult.matchedCount === 0) {
+            return { success: false, message: "کاربر یافت نشد" };
+        }
+        return { success: true, message: "اطلاعات کاربر با موفقیت به‌روزرسانی شد" };
+    }
+    catch (error) {
+        return { success: false, message: "خطا در سرور" };
+    }
+}
+
+module.exports = { find, findById, update }

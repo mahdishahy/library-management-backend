@@ -17,6 +17,29 @@ const getUserById = async (req, res) => {
     res.end()
 }
 
+const update = async (req, res) => {
+
+    const parsedUrl = url.parse(req.url, true)
+    const id = parsedUrl.query.id
+    let body = ''
+    req.on('data', (data) => {
+        body += data.toString()
+    })
+    req.on('end', async () => {
+        try {
+            const updateData = JSON.parse(body)
+            const updateResult = await UserModel.update(id, updateData)
+            res.writeHead(updateResult.success ? 200 : 404, { 'content-type': 'application/json' })
+            res.write(JSON.stringify(updateResult))
+            res.end()
+        } catch (error) {
+            res.writeHead(400, { 'content-type': 'application/json' })
+            res.write(JSON.stringify({ success: false, message: 'داده های نامعتبر' }))
+            res.end()
+        }
+    })
+}
+
 module.exports = {
-    getAll, getUserById
+    getAll, getUserById, update
 }

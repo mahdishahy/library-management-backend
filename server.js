@@ -9,6 +9,9 @@ const server = http.createServer((req, res) => {
     else if (req.method === 'GET' && req.url.startsWith("/api/v1/users")) {
         userController.getUserById(req, res)
     }
+    else if (req.method === 'PUT' && req.url.startsWith('/api/v1/users')) {
+        userController.update(req, res)
+    }
 })
 
 server.listen(process.env.PORT, () => {
