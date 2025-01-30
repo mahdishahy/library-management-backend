@@ -1,10 +1,13 @@
 require('dotenv').config();
 const http = require('http');
-const userController = require('./src/api/v1/controllers/userController');
+const userController = require('./src/api/v1/controllers/userController.js');
 
-const server = http.createServer((request, response) => {
-    if(request.method === 'GET' && request.url === '/api/v1/users/all'){
-        userController.getAll(request, response)
+const server = http.createServer((req, res) => {
+    if (req.method === 'GET' && req.url === '/api/v1/users/all') {
+        userController.getAll(req, res)
+    }
+    else if (req.method === 'GET' && req.url.startsWith("/api/v1/users")) {
+        userController.getUserById(req, res)
     }
 })
 

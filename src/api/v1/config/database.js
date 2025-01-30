@@ -8,8 +8,7 @@ const connect = async () => {
     try {
         await client.connect()
         console.log('Connected to the database');
-        const database = client.db(dbName)
-        return database
+        return client.db(dbName)
     } catch (error) {
         console.log(`Database connection failed: ${error}`);
         process.exit(1) // Exit the process with an error
@@ -17,4 +16,4 @@ const connect = async () => {
 
 }
 
-module.exports = { connect }
+module.exports = { connect, ObjectId }

@@ -1,12 +1,19 @@
 require('dotenv').config();
-const { connect } = require(process.env.BASE_PATH + 'src/api/v1/config/database.js');
+const path = require('path');
+const { connect, ObjectId } = require(path.resolve('src/api/v1/config/database.js'));
 
 const find = async () => {
-    const database = await connect();
+    const database = await connect()
     const usersCollection = database.collection('users')
     const users = await usersCollection.find().toArray()
     return users
 }
 
+const findById = async (id) => {
+    const database = await connect()
+    const userController = database.collection("users")
+    const user = await userController.findOne({ _id: new ObjectId(id) })
+    return user
+}
 
-module.exports = {find}
+module.exports = { find, findById }
