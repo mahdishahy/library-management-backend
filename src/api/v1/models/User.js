@@ -22,8 +22,8 @@ const update = async (id, updateData) => {
         const usersCollection = database.collection('users')
         const filter = { _id: new ObjectId(id) }
         const update = { $set: updateData }
-        const updateUserResult = await usersCollection.updateOne(filter, update)
-        if (updateUserResult.matchedCount === 0) {
+        const updateResult = await usersCollection.updateOne(filter, update)
+        if (updateResult.matchedCount === 0) {
             return { success: false, message: "کاربر یافت نشد" };
         }
         return { success: true, message: "اطلاعات کاربر با موفقیت به‌روزرسانی شد" };
@@ -33,4 +33,18 @@ const update = async (id, updateData) => {
     }
 }
 
-module.exports = { find, findById, update }
+const remove = async (id) => {
+    try {
+        const database = await connect()
+        const usersCollection = database.collection('users')
+        const rermoveResult = await usersCollection.deleteOne({ _id: new ObjectId(id) })
+        if (rermoveResult.deletedCount === 0) {
+            return { success: false, message: 'کاربر یافت نشد' }
+        }
+        return { success: true, message: 'کاربر مورد نظر با موفقیت حذف شد' }
+    } catch (error) {
+        return { success: false, message: 'خطا در سرور' }
+    }
+}
+
+module.exports = { find, findById, update, remove }
