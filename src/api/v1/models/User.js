@@ -16,6 +16,20 @@ const findById = async (id) => {
     return user
 }
 
+const findByEmail = async (email) => {
+    const database = await connect()
+    const usersCollection = database.collection("users")
+    const user = await usersCollection.findOne({ email: email })
+    return user
+}
+
+const findByPhoneNumber = async (phoneNumber) => {
+    const database = await connect()
+    const usersCollection = database.collection("users")
+    const user = await usersCollection.findOne({ phone_number: phoneNumber })
+    return user
+}
+
 const update = async (id, updateData) => {
     try {
         const database = await connect()
@@ -47,4 +61,19 @@ const remove = async (id) => {
     }
 }
 
-module.exports = { find, findById, update, remove }
+const store = async (newUserInfos) => {
+    try {
+        const database = await connect()
+        const usersCollection = database.collection('users')
+        const storeResult = await usersCollection.insertOne(newUserInfos)
+        if (!storeResult.insertedId) {
+            return { success: false, message: 'ثبت نام ناموفق بود' }
+        }
+        return { success: true, message: 'ثبت نام با موفقیت انجام شد', userId: storeResult.insertedId }
+    } catch (error) {
+        return { success: false, message: 'خطا در سرور' }
+    }
+}
+
+
+module.exports = { find, findById, update, remove, store, findByEmail, findByPhoneNumber }

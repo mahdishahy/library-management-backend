@@ -15,6 +15,9 @@ const server = http.createServer((req, res) => {
     else if (req.method === 'DELETE' && req.url.startsWith('/api/v1/users')) {
         userController.remove(req, res)
     }
+    else if (req.method === 'POST' && req.url.startsWith('/api/v1/users/register')) {
+        userController.store(req, res)
+    }
 })
 
 server.listen(process.env.PORT, () => {
