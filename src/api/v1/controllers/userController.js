@@ -101,6 +101,64 @@ const store = async (req, res) => {
     }
 }
 
+const login = async (req, res) => {
+    let buffer = ''
+    req.on('data', (data) => {
+        buffer += data.toString()
+    })
+    req.on('end', async () => {
+        const { email, password } = JSON.parse(buffer)
+
+        if (!email || !password) {
+            res.writeHead(400, { "Content-Type": "application/json" });
+            res.write(JSON.stringify({ success: false, message: 'فیلد ایمیل و رمزعبور الزامی است' }))
+            return res.end()
+        }
+
+        const user = await UserModel.findUser({ email })
+        if (!user) {
+            res.writeHead(404, { "Content-Type": "application/json" });
+            res.write(JSON.stringify({ success: false, message: 'کابری با این اطلاعات یافت نشد' }))
+            return res.end()
+        }
+
+        const isPasswordValid = await bcrypt.compare(password, user.password)
+        if (!isPasswordValid) {
+            res.writeHead(401, { "Content-Type": "application/json" });
+            res.write(JSON.stringify({ success: true, message: 'ایمیل یا رمزعبور اشتباه' }))
+            return res.end()
+        }
+
+        await UserModel.updateUserLoginStatus(email, true)
+        res.writeHead(200, { "Content-Type": "application/json" });
+        res.write(JSON.stringify({ success: false, message: 'ورود انجام شد' }))
+        return res.end()
+
+    })
+
+}
+
+const logout = async (req, res) => {
+    let body = ''
+    req.on('data', (data) => {
+        body += data.toString()
+    })
+    req.on('end', async () => {
+        try {
+            const { email } = JSON.parse(body)
+            console.log(email);
+            const result = await UserModel.logoutUser(email);
+            res.writeHead(result.success ? 200 : 400, { 'content-type': 'application/json' })
+            res.write(JSON.stringify({ success: true, message: 'خروج از حساب با موفقیت انجام شد' }))
+            res.end()
+        } catch (error) {
+            res.writeHead(500, { 'content-type': 'application/json' })
+            res.write(JSON.stringify({ success: false, message: 'خطا در سرور' }))
+            res.end()
+        }
+    })
+}
+
 module.exports = {
-    getAll, getUserById, update, remove, store
+    getAll, getUserById, update, remove, store, login, logout
 }

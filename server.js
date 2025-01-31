@@ -15,8 +15,14 @@ const server = http.createServer((req, res) => {
     else if (req.method === 'DELETE' && req.url.startsWith('/api/v1/users')) {
         userController.remove(req, res)
     }
-    else if (req.method === 'POST' && req.url.startsWith('/api/v1/users/register')) {
+    else if (req.method === 'POST' && req.url === '/api/v1/register') {
         userController.store(req, res)
+    }
+    else if (req.method === 'POST' && req.url === '/api/v1/login') {
+        userController.login(req, res)
+    }
+    else if (req.method === 'POST' && req.url === '/api/v1/logout') {
+        userController.logout(req, res)
     }
 })
 

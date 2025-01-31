@@ -9,6 +9,17 @@ const find = async () => {
     return users
 }
 
+const findUser = async (query) => {
+    try {
+        const database = await connect()
+        const usersCollection = database.collection('users')
+        const user = await usersCollection.findOne(query)
+        return user
+    } catch (error) {
+        return null
+    }
+}
+
 const findById = async (id) => {
     const database = await connect()
     const usersCollection = database.collection("users")
@@ -47,6 +58,13 @@ const update = async (id, updateData) => {
     }
 }
 
+const updateUserLoginStatus = async (email, isLoginStatus) => {
+    const database = await connect()
+    const usersCollection = database.collection('users')
+    const result = usersCollection.updateOne({ email }, { $set: { isLogin: isLoginStatus } })
+    return result
+}
+
 const remove = async (id) => {
     try {
         const database = await connect()
@@ -75,5 +93,18 @@ const store = async (newUserInfos) => {
     }
 }
 
+const logoutUser = async (email) => {
+    try {
+        const result = await updateUserLoginStatus(email, false);
 
-module.exports = { find, findById, update, remove, store, findByEmail, findByPhoneNumber }
+        if (result.modifiedCount === 0) {
+            return { success: false, message: "کاربر یافت نشد یا قبلاً خارج شده است" };
+        }
+
+        return { success: true, message: "خروج موفقیت‌آمیز بود" };
+    } catch (error) {
+        return { success: false, message: "خطای سرور" };
+    }
+}
+
+module.exports = { find, findById, update, remove, store, findByEmail, findByPhoneNumber, findUser, updateUserLoginStatus, logoutUser }
