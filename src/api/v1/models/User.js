@@ -1,6 +1,6 @@
 const mongoose = require("mongoose");
 
-const userSchema = new mongoose.schemma(
+const userSchema = mongoose.Schema(
   {
     full_name: {
       type: String,
@@ -20,7 +20,7 @@ const userSchema = new mongoose.schemma(
     },
     password: {
       type: String,
-      required: [true, "رمزعبور الزامی است"],
+      required: [true, "رمز عبور الزامی است"],
       minLength: 8,
     },
     address: {
@@ -45,7 +45,7 @@ const userSchema = new mongoose.schemma(
       default: "USER",
     },
   },
-  { timestamps: true }
+  { timestamps: true, strict: true }
 );
 
 const User = mongoose.model("User", userSchema);

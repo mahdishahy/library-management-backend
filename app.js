@@ -41,10 +41,15 @@ require("dotenv").config();
 const express = require("express");
 const path = require("path");
 const { connect } = require(path.resolve("src/api/v1/config/database.js"));
+const userController = require(path.resolve(
+  "src/api/v1/controllers/userController"
+));
 
 const app = express();
 connect();
 app.use(express.json());
+
+app.post("/api/v1/register", userController.createUser);
 
 app.listen(3000, () => {
   console.log("Server running on the port 3000");

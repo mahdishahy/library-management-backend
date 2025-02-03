@@ -30,8 +30,16 @@ const userSchemaValidation = {
     type: "string",
     min: 8,
     messages: {
-      required: "رمزعبور الزامی است",
+      required: "رمز عبور الزامی است",
       stringMin: "رمزعبور حداقل باید 8 کاراکتر باشد",
+    },
+  },
+  confirm_password: {
+    type: "equal",
+    field: "password",
+    messages: {
+      required: "تایید رمز عبور الزامی است",
+      equalField: "رمز عبور و تکرار آن باید یکسان باشد",
     },
   },
   address: {
