@@ -1,6 +1,8 @@
 const path = require("path");
 const checkUser = require(path.resolve("src/api/v1/validators/userValidator"));
 const User = require(path.resolve("src/api/v1/models/User"));
+const bcrypt = require('bcrypt');
+const saltRounds = 10;
 
 const createUser = async (req, res) => {
   const validationResult = checkUser(req.body);
@@ -9,10 +11,10 @@ const createUser = async (req, res) => {
   }
   const { full_name, email, password } = req.body;
   try {
-    const newUser = User.create({
+    const newUser = await User.create({
       full_name,
       email,
-      password,
+      password: await bcrypt.hash(password, saltRounds),
       address: null,
       phone_number: null,
       membership: false,
