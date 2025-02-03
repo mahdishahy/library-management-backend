@@ -1,5 +1,5 @@
 const url = require("url");
-const UserModel = require("./../models/User.js");
+const UserModel = require("../models/users.js");
 const bcrypt = require("bcrypt");
 
 const getAll = async (req, res) => {

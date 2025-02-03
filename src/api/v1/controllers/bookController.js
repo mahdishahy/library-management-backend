@@ -1,5 +1,5 @@
 const url = require('url');
-const BookModel = require('./../models/Book.js');
+const BookModel = require('../models/books.js');
 const bcrypt = require('bcrypt');
 
 const getAll = async (req, res) => {
