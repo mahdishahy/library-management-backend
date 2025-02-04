@@ -1,5 +1,5 @@
 const path = require("path");
-const checkUser = require(path.resolve("src/api/v1/validators/userValidator"));
+const checkUser = require(path.resolve("src/api/v1/Validators/userValidator"));
 const User = require(path.resolve("src/api/v1/models/User"));
 const bcrypt = require('bcrypt');
 const saltRounds = 10;

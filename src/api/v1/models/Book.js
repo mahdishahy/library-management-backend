@@ -1,8 +1,6 @@
-const express = require("express");
-const { default: mongoose } = require("mongoose");
-const { stringify } = require("querystring");
+const mongoose = require("mongoose");
 
-const bookSchema = express.Schema(
+const bookSchema = mongoose.Schema(
   {
     title: {
       type: String,
@@ -50,6 +48,12 @@ const bookSchema = express.Schema(
       type: Date,
       required: true,
     },
+    category: {
+      type: String,
+      required: true,
+      trim: true,
+      maxLength: 64,
+    },
     free: {
       type: Boolean,
       default: true,
@@ -57,12 +61,6 @@ const bookSchema = express.Schema(
     description: {
       type: String,
       maxLength: 2000,
-    },
-    category: {
-      type: String,
-      required: true,
-      trim: true,
-      maxLength: 64,
     },
     image_url: {
       type: String,

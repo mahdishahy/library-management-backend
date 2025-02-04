@@ -11,88 +11,103 @@ const bookSchemaValidation = {
     empty: false,
     messages: {
       required: "نام کتاب الزامی است",
+      stringMin: "نام کتاب حداقل باید 5 کاراکتر باشد",
+      stringMax: "نام کتاب حداکثر می‌تواند 125 کاراکتر باشد",
     },
-    author: {
-      type: "string",
-      min: 3,
-      max: 128,
-      trim: true,
-      empty: false,
-      messages: {
-        required: "نام نویسنده کتاب الزامی است",
-      },
+  },
+  author: {
+    type: "string",
+    min: 3,
+    max: 128,
+    trim: true,
+    empty: false,
+    messages: {
+      required: "نام نویسنده کتاب الزامی است",
+      stringMin: "نام نویسنده کتاب حداقل باید 3 کاراکتر باشد",
+      stringMax: "نام نویسنده کتاب حداکثر می‌تواند 128 کاراکتر باشد",
     },
-    pages: {
-      type: "number",
-      min: 1,
-      empty: false,
-      messages: {
-        required: "تعداد صفحات کتاب الزامی است",
-      },
+  },
+  pages: {
+    type: "number",
+    min: 1,
+    empty: false,
+    messages: {
+      required: "تعداد صفحات کتاب الزامی است",
+      stringMin: "تعداد صفحات کتاب حداقل باید 1 باشد",
     },
-    publisher: {
-      type: "string",
-      min: 3,
-      max: 128,
-      trim: true,
-      empty: false,
-      messages: {
-        required: "نام ناشر کتاب الزامی است",
-      },
+  },
+  publisher: {
+    type: "string",
+    min: 3,
+    max: 128,
+    trim: true,
+    empty: false,
+    messages: {
+      required: "نام ناشر کتاب الزامی است",
+      stringMin: "نام ناشر کتاب حداقل باید 5 کاراکتر باشد",
+      stringMax: "نام ناشر کتاب حداکثر می‌تواند 128 کاراکتر باشد",
     },
-    copies_available: {
-      type: "number",
-      min: 0,
-      empty: false,
-      messages: {
-        required: "تعداد نسخه ها موجود الزامی است",
-      },
+  },
+  copies_available: {
+    type: "number",
+    min: 0,
+    empty: false,
+    messages: {
+      required: "تعداد نسخه ها موجود الزامی است",
+      stringMin: "تعداد نسخه های موجود کتاب حداقل باید 0 باشد",
     },
-    total_copies: {
-      type: "number",
-      min: 1,
-      empty: false,
-      messages: {
-        required: "تعداد کل نسخه های کتاب الزامی است",
-      },
+  },
+  total_copies: {
+    type: "number",
+    min: 1,
+    empty: false,
+    messages: {
+      required: "تعداد کل نسخه های کتاب الزامی است",
+      stringMin: "تعداد کل نسخه ها موجود کتاب حداقل باید 1 باشد",
     },
-    language: {
-      type: "enum",
-      values: ["English", "Persian", "French", "German", "Spanish"],
-      empty: false,
-      messages: {
-        required: "زبان کتاب الزامی است",
-        enumValue: "زبان معتبر انتخاب کنید",
-      },
+  },
+  language: {
+    type: "enum",
+    values: ["English", "Persian", "French", "German", "Spanish"],
+    empty: false,
+    messages: {
+      required: "زبان کتاب الزامی است",
+      enumValue: "زبان معتبر انتخاب کنید",
     },
-    publication_date: {
-      type: "date",
-      convert: true,
-      empty: false,
-      messages: {
-        required: "تاریخ انتشار کتاب الزامی است",
-      },
+  },
+  publication_date: {
+    type: "date",
+    convert: true,
+    empty: false,
+    messages: {
+      required: "تاریخ انتشار کتاب الزامی است",
     },
-    free: {
-      type: "boolean",
-      default: true,
+  },
+  category: {
+    type: "string",
+    max: 64,
+    trim: true,
+    empty: false,
+    messages: {
+      required: "دسته‌بندی کتاب الزامی است",
+      stringMax: "نام دسته بندی کتاب حداکثر می‌تواند 64 کاراکتر باشد",
     },
-    description: {
-      type: "string",
-      max: 2000,
-      optional: true,
+  },
+  free: {
+    type: "boolean",
+    default: true,
+  },
+  description: {
+    type: "string",
+    max: 2000,
+    optional: true,
+    messages: {
+      stringMax: "توضیحات کتاب حداکثر می‌تواند 2000 کاراکتر باشد",
     },
-    category: {
-      type: "string",
-      max: 64,
-      trim: true,
-      empty: false,
-      messages: { required: "دسته‌بندی کتاب الزامی است" },
-    },
-    image_url: {
-      type: "url",
-      default: null,
-    },
+  },
+  image_url: {
+    type: "url",
+    default: null,
   },
 };
 

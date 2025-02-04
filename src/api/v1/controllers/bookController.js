@@ -1,5 +1,5 @@
 const path = require("path");
-const checkBook = require(path.resolve("src/api/v1/validators/bookValidator"));
+const checkBook = require(path.resolve("src/api/v1/Validators/bookValidator"));
 const Book = require(path.resolve("src/api/v1/models/Book"));
 
 const createBook = async (req, res) => {
@@ -11,6 +11,7 @@ const createBook = async (req, res) => {
     title,
     author,
     publisher,
+    pages,
     copies_available,
     total_copies,
     language,
@@ -24,6 +25,7 @@ const createBook = async (req, res) => {
       title,
       author,
       publisher,
+      pages,
       copies_available,
       total_copies,
       language,
@@ -33,7 +35,7 @@ const createBook = async (req, res) => {
       image_url,
       free: true,
     });
-    res.status(201).json({ message: "کتاب ثبت شد", user: newBook });
+    res.status(201).json({ message: "کتاب ثبت شد", book: newBook });
   } catch (error) {
     res.status(500).json({ message: "خطا در سرور", error: error.message });
   }
