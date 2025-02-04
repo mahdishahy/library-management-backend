@@ -4,14 +4,14 @@ const userSchema = mongoose.Schema(
   {
     full_name: {
       type: String,
-      required: [true, "نام و نام خانوادگی الزامی است"],
+      required: true,
       trim: true,
       minLength: 5,
       maxLength: 125,
     },
     email: {
       type: String,
-      required: [true, "ایمیل الزامی است"],
+      required: true,
       unique: true,
       trim: true,
       lowercase: true,
@@ -20,7 +20,7 @@ const userSchema = mongoose.Schema(
     },
     password: {
       type: String,
-      required: [true, "رمز عبور الزامی است"],
+      required: true,
       minLength: 8,
     },
     address: {

@@ -1,64 +1,77 @@
-require('dotenv').config();
-const path = require('path');
-const { connect, ObjectId } = require(path.resolve('src/api/v1/config/database.js'));
+const express = require("express");
+const { default: mongoose } = require("mongoose");
+const { stringify } = require("querystring");
 
-const find = async () => {
-    const database = await connect()
-    const booksCollection = database.collection('books')
-    const books = await booksCollection.find().toArray()
-    return books
-}
+const bookSchema = express.Schema(
+  {
+    title: {
+      type: String,
+      required: true,
+      minLength: 3,
+      maxLength: 256,
+      trim: true,
+    },
+    author: {
+      type: String,
+      required: true,
+      minLength: 3,
+      maxLength: 128,
+      trim: true,
+    },
+    pages: {
+      type: Number,
+      required: true,
+      min: 1,
+    },
+    publisher: {
+      type: String,
+      required: true,
+      minLength: 3,
+      maxLength: 128,
+      trim: true,
+    },
+    copies_available: {
+      type: Number,
+      required: true,
+      min: 0,
+    },
+    total_copies: {
+      type: Number,
+      required: true,
+      min: 1,
+    },
+    language: {
+      type: String,
+      required: true,
+      enum: ["English", "Persian", "French", "German", "Spanish"],
+      trim: true,
+    },
+    publication_date: {
+      type: Date,
+      required: true,
+    },
+    free: {
+      type: Boolean,
+      default: true,
+    },
+    description: {
+      type: String,
+      maxLength: 2000,
+    },
+    category: {
+      type: String,
+      required: true,
+      trim: true,
+      maxLength: 64,
+    },
+    image_url: {
+      type: String,
+      default: null,
+    },
+  },
+  { timestamps: true, strict: true }
+);
 
-const findById = async (id) => {
-    const database = await connect()
-    const booksCollection = database.collection("books")
-    const book = await booksCollection.findOne({ _id: new ObjectId(id) })
-    return book
-}
+const Book = mongoose.model("Book", bookSchema);
 
-const update = async (id, updateData) => {
-    try {
-        const database = await connect()
-        const booksCollection = database.collection('books')
-        const filter = { _id: new ObjectId(id) }
-        const update = { $set: updateData }
-        const updateResult = await booksCollection.updateOne(filter, update)
-        if (updateResult.matchedCount === 0) {
-            return { success: false, message: "کتاب یافت نشد" };
-        }
-        return { success: true, message: "اطلاعات کتاب با موفقیت به‌روزرسانی شد" };
-    }
-    catch (error) {
-        return { success: false, message: "خطا در سرور" };
-    }
-}
-
-const remove = async (id) => {
-    try {
-        const database = await connect()
-        const booksCollection = database.collection('books')
-        const rermoveResult = await booksCollection.deleteOne({ _id: new ObjectId(id) })
-        if (rermoveResult.deletedCount === 0) {
-            return { success: false, message: 'کتاب یافت نشد' }
-        }
-        return { success: true, message: 'کتاب مورد نظر با موفقیت حذف شد' }
-    } catch (error) {
-        return { success: false, message: 'خطا در سرور' }
-    }
-}
-
-const store = async (newBookInfos) => {
-    try {
-        const database = await connect()
-        const booksCollection = database.collection('books')
-        const storeResult = await booksCollection.insertOne(newBookInfos)
-        if (!storeResult.insertedId) {
-            return { success: false, message: 'ثبت کتاب ناموفق بود' }
-        }
-        return { success: true, message: 'ثبت کتاب با موفقیت انجام شد', bookId: storeResult.insertedId }
-    } catch (error) {
-        return { success: false, message: 'خطا در سرور' }
-    }
-}
-
-module.exports = { find, findById, update, remove, store }
+module.exports = Book;
