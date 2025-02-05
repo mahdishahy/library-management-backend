@@ -5,7 +5,7 @@ const mongoose = require("mongoose");
 const bcrypt = require("bcrypt");
 const saltRounds = 10;
 
-const createUser = async (req, res) => {
+exports.createUser = async (req, res) => {
   const validationResult = checkUser(req.body);
   if (validationResult !== true) {
     return res.status(422).json(validationResult);
@@ -27,7 +27,7 @@ const createUser = async (req, res) => {
   }
 };
 
-const removeUser = async (req, res) => {
+exports.removeUser = async (req, res) => {
   const id = req.params.id;
   const validationResult = mongoose.Types.ObjectId.isValid(id);
   if (!validationResult) {
@@ -40,4 +40,15 @@ const removeUser = async (req, res) => {
   res.status(200).json({ message: "کاربر با موفقیت حذف شد", removedUser });
 };
 
-module.exports = { createUser, removeUser };
+exports.getOne = async (req, res) => {
+  const id = req.params.id;
+  const validationResult = mongoose.Types.ObjectId.isValid(id);
+  if (!validationResult) {
+    return res.status(422).json({ message: "ایدی اشتباه می‌باشد" });
+  }
+  const user = await User.find({ _id: id });
+  if (!user) {
+    return res.status(404).json({ message: "کاربر پیدا نشد" });
+  }
+  res.json({ user });
+};
