@@ -1,6 +1,7 @@
 const path = require("path");
 const checkBook = require(path.resolve("src/api/v1/Validators/bookValidator"));
 const Book = require(path.resolve("src/api/v1/models/Book"));
+const mongoose = require('mongoose');
 
 const createBook = async (req, res) => {
   const validationResult = checkBook(req.body);
@@ -41,4 +42,17 @@ const createBook = async (req, res) => {
   }
 };
 
-module.exports = { createBook };
+const removeBook = async (req, res) => {
+   const id = req.params.id;
+    const validationResult = mongoose.Types.ObjectId.isValid(id);
+    if (!validationResult) {
+      return res.status(422).json({ message: "ایدی اشتباه می‌باشد" });
+    }
+    const removedBook = await Book.findByIdAndDelete(id);
+    if (!removedBook) {
+      return res.status(404).json({ message: "کتاب پیدا نشد!" });
+    }
+    res.status(200).json({ message: "کتاب با موفقیت حذف شد", removedBook });
+};
+
+module.exports = { createBook, removeBook };

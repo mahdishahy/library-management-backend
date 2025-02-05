@@ -7,5 +7,6 @@ const bookController = require(path.resolve(
 const booksRouter = express.Router();
 
 booksRouter.post("/", bookController.createBook);
+booksRouter.delete("/:id", bookController.removeBook);
 
 module.exports = booksRouter;

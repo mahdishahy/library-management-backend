@@ -35,7 +35,7 @@ const removeUser = async (req, res) => {
   }
   const removedUser = await User.findByIdAndDelete(id);
   if (!removedUser) {
-    res.status(404).json({ message: "کاربر پیدا نشد!" });
+    return res.status(404).json({ message: "کاربر پیدا نشد!" });
   }
   res.status(200).json({ message: "کاربر با موفقیت حذف شد", removedUser });
 };
