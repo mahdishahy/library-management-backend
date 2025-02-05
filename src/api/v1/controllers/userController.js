@@ -23,32 +23,60 @@ exports.createUser = async (req, res) => {
     });
     res.status(201).json({ message: "کاربر ثبت شد", user: newUser });
   } catch (error) {
-    res.status(500).json({ message: "خطا در سرور", error: error.message });
+    return res
+      .status(500)
+      .json({ message: "خطا در سرور", error: error.message });
   }
 };
 
 exports.removeUser = async (req, res) => {
-  const id = req.params.id;
-  const validationResult = mongoose.Types.ObjectId.isValid(id);
-  if (!validationResult) {
-    return res.status(422).json({ message: "ایدی اشتباه می‌باشد" });
+  try {
+    const id = req.params.id;
+    const validationResult = mongoose.Types.ObjectId.isValid(id);
+    if (!validationResult) {
+      return res.status(422).json({ message: "ایدی اشتباه می‌باشد" });
+    }
+    const removedUser = await User.findByIdAndDelete(id);
+    if (!removedUser) {
+      return res.status(404).json({ message: "کاربر پیدا نشد!" });
+    }
+    res.status(200).json({ message: "کاربر با موفقیت حذف شد", removedUser });
+  } catch (error) {
+    return res
+      .status(500)
+      .json({ message: "خطا در سرور", error: error.message });
   }
-  const removedUser = await User.findByIdAndDelete(id);
-  if (!removedUser) {
-    return res.status(404).json({ message: "کاربر پیدا نشد!" });
+};
+
+exports.getAll = async (req, res) => {
+  try {
+    const users = await User.find();
+    if (!users.length) {
+      return res.status(404).json({ message: "هیج کاربری یافت نشد" });
+    }
+    res.json({ users });
+  } catch (error) {
+    return res
+      .status(500)
+      .json({ message: "خطا در سرور", error: error.message });
   }
-  res.status(200).json({ message: "کاربر با موفقیت حذف شد", removedUser });
 };
 
 exports.getOne = async (req, res) => {
-  const id = req.params.id;
-  const validationResult = mongoose.Types.ObjectId.isValid(id);
-  if (!validationResult) {
-    return res.status(422).json({ message: "ایدی اشتباه می‌باشد" });
+  try {
+    const id = req.params.id;
+    const validationResult = mongoose.Types.ObjectId.isValid(id);
+    if (!validationResult) {
+      return res.status(422).json({ message: "ایدی اشتباه می‌باشد" });
+    }
+    const user = await User.findById(id);
+    if (!user) {
+      return res.status(404).json({ message: "کاربر پیدا نشد" });
+    }
+    res.json({ user });
+  } catch (error) {
+    return res
+      .status(500)
+      .json({ message: "خطا در سرور", error: error.message });
   }
-  const user = await User.find({ _id: id });
-  if (!user) {
-    return res.status(404).json({ message: "کاربر پیدا نشد" });
-  }
-  res.json({ user });
 };

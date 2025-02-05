@@ -1,9 +1,9 @@
 const path = require("path");
 const checkBook = require(path.resolve("src/api/v1/Validators/bookValidator"));
 const Book = require(path.resolve("src/api/v1/models/Book"));
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
 
-const createBook = async (req, res) => {
+exports.createBook = async (req, res) => {
   const validationResult = checkBook(req.body);
   if (validationResult !== true) {
     return res.status(422).json(validationResult);
@@ -38,12 +38,15 @@ const createBook = async (req, res) => {
     });
     res.status(201).json({ message: "کتاب ثبت شد", book: newBook });
   } catch (error) {
-    res.status(500).json({ message: "خطا در سرور", error: error.message });
+    return res
+      .status(500)
+      .json({ message: "خطا در سرور", error: error.message });
   }
 };
 
-const removeBook = async (req, res) => {
-   const id = req.params.id;
+exports.removeBook = async (req, res) => {
+  try {
+    const id = req.params.id;
     const validationResult = mongoose.Types.ObjectId.isValid(id);
     if (!validationResult) {
       return res.status(422).json({ message: "ایدی اشتباه می‌باشد" });
@@ -53,6 +56,42 @@ const removeBook = async (req, res) => {
       return res.status(404).json({ message: "کتاب پیدا نشد!" });
     }
     res.status(200).json({ message: "کتاب با موفقیت حذف شد", removedBook });
+  } catch (error) {
+    return res
+      .status(500)
+      .json({ message: "خطا در سرور", error: error.message });
+  }
 };
 
-module.exports = { createBook, removeBook };
+exports.getAll = async (req, res) => {
+  try {
+    const books = await Book.find();
+    if (!books.length) {
+      return res.status(404).json({ message: "هیج کتابی یافت نشد" });
+    }
+    res.json({ books });
+  } catch (error) {
+    return res
+      .status(500)
+      .json({ message: "خطا در سرور", error: error.message });
+  }
+};
+
+exports.getOne = async (req, res) => {
+  try {
+    const id = req.params.id;
+    const validationResult = mongoose.Types.ObjectId.isValid(id);
+    if (!validationResult) {
+      return res.status(422).json({ message: "ایدی اشتباه می‌باشد" });
+    }
+    const book = await Book.findById(id);
+    if (!book) {
+      return res.status(404).json({ message: "کتاب پیدا نشد" });
+    }
+    res.json({ book });
+  } catch (error) {
+    return res
+      .status(500)
+      .json({ message: "خطا در سرور", error: error.message });
+  }
+};
