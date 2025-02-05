@@ -80,3 +80,14 @@ exports.getOne = async (req, res) => {
       .json({ message: "خطا در سرور", error: error.message });
   }
 };
+
+exports.countUsers = async (req, res) => {
+  try {
+    const count = await User.countDocuments();
+    res.status(200).json({ totalUsers: count });
+  } catch (error) {
+    return res
+      .status(500)
+      .json({ message: "خطا در سرور", error: error.message });
+  }
+};
