@@ -8,6 +8,7 @@ const userSchemaValidation = {
     min: 5,
     max: 125,
     trim: true,
+    empty: false,
     messages: {
       required: "نام و نام خانوادگی الزامی است",
       stringMin: "نام و نام خانوادگی حداقل باید 5 کاراکتر باشد",
@@ -19,6 +20,7 @@ const userSchemaValidation = {
     min: 5,
     max: 256,
     normalize: true,
+    empty: false,
     messages: {
       required: "ایمیل الزامی است",
       email: "ایمیل وارد شده معتبر نیست",
@@ -29,6 +31,7 @@ const userSchemaValidation = {
   password: {
     type: "string",
     min: 8,
+    empty: false,
     messages: {
       required: "رمز عبور الزامی است",
       stringMin: "رمزعبور حداقل باید 8 کاراکتر باشد",
@@ -37,6 +40,7 @@ const userSchemaValidation = {
   confirm_password: {
     type: "equal",
     field: "password",
+    empty: false,
     messages: {
       required: "تایید رمز عبور الزامی است",
       equalField: "رمز عبور و تکرار آن باید یکسان باشد",
