@@ -95,3 +95,14 @@ exports.getOne = async (req, res) => {
       .json({ message: "خطا در سرور", error: error.message });
   }
 };
+
+exports.countBooks = async (req, res) => {
+  try {
+    const count = await Book.countDocuments();
+    res.status(200).json({ totalBooks: count });
+  } catch (error) {
+    return res
+      .status(500)
+      .json({ message: "خطا در سرور", error: error.message });
+  }
+};

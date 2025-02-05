@@ -11,6 +11,8 @@ booksRouter
   .get(bookController.getAll)
   .post(bookController.createBook);
 
+booksRouter.get('/count', bookController.countBooks)
+
 booksRouter
   .route("/:id")
   .get(bookController.getOne)
