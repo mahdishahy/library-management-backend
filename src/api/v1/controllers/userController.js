@@ -1,7 +1,8 @@
 const path = require("path");
 const checkUser = require(path.resolve("src/api/v1/Validators/userValidator"));
 const User = require(path.resolve("src/api/v1/models/User"));
-const bcrypt = require('bcrypt');
+const mongoose = require("mongoose");
+const bcrypt = require("bcrypt");
 const saltRounds = 10;
 
 const createUser = async (req, res) => {
@@ -26,4 +27,17 @@ const createUser = async (req, res) => {
   }
 };
 
-module.exports = { createUser };
+const removeUser = async (req, res) => {
+  const id = req.params.id;
+  const validationResult = mongoose.Types.ObjectId.isValid(id);
+  if (!validationResult) {
+    return res.status(422).json({ message: "ایدی اشتباه می‌باشد" });
+  }
+  const removedUser = await User.findByIdAndDelete(id);
+  if (!removedUser) {
+    res.status(404).json({ message: "کاربر پیدا نشد!" });
+  }
+  res.status(200).json({ message: "کاربر با موفقیت حذف شد", removedUser });
+};
+
+module.exports = { createUser, removeUser };

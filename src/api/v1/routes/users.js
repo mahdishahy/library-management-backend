@@ -8,5 +8,6 @@ const usersRouter = express.Router()
 
 
 usersRouter.post("/register", userController.createUser);
+usersRouter.delete("/:id", userController.removeUser);
 
 module.exports = usersRouter
