@@ -1,10 +1,10 @@
 const path = require("path");
-const checkBook = require(path.resolve("src/api/v1/Validators/bookValidator"));
+const validator = require(path.resolve("src/api/v1/Validators/bookValidator"));
 const Book = require(path.resolve("src/api/v1/models/Book"));
 const mongoose = require("mongoose");
 
 exports.createBook = async (req, res) => {
-  const validationResult = checkBook(req.body);
+  const validationResult = validator.checkBook(req.body);
   if (validationResult !== true) {
     return res.status(422).json(validationResult);
   }
@@ -104,5 +104,39 @@ exports.countBooks = async (req, res) => {
     return res
       .status(500)
       .json({ message: "خطا در سرور", error: error.message });
+  }
+};
+
+exports.updateBook = async (req, res) => {
+  try {
+    const id = req.params.id;
+    const idValidationResult = mongoose.Types.ObjectId.isValid(id);
+    if (!idValidationResult) {
+      return res.status(422).json({ message: "ایدی اشتباه می‌باشد" });
+    }
+
+    const fieldsToValidate = Object.keys(req.body).reduce((acc, key) => {
+      if (validator.bookSchemaValidation[key]) {
+        acc[key] = validator.bookSchemaValidation[key];
+      }
+      return acc;
+    }, {});
+
+    const checkPartial = validator.v.compile(fieldsToValidate);
+    const validationErrors = checkPartial(req.body);
+    if (validationErrors !== true) {
+      return res
+        .status(422)
+        .json({ message: "خطای اعتبارسنجی", errors: validationErrors });
+    }
+
+    const book = await Book.findByIdAndUpdate(id, req.body, { new: true });
+
+    if (!book) {
+      return res.status(404).json({ message: "کتاب پیدا نشد" });
+    }
+    res.status(200).json({ message: "کتاب با موفقیت به‌روزرسانی شد", book });
+  } catch (error) {
+    res.status(500).json({ message: "خطا در سرور", error: error.message });
   }
 };

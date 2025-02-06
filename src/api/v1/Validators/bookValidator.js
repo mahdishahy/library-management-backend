@@ -112,4 +112,4 @@ const bookSchemaValidation = {
 };
 
 const checkBook = v.compile(bookSchemaValidation);
-module.exports = checkBook;
+module.exports = { v, checkBook, bookSchemaValidation };

@@ -80,4 +80,4 @@ const userSchemaValidation = {
 
 const checkUser = v.compile(userSchemaValidation);
 
-module.exports = checkUser;
+module.exports = { v, checkUser, userSchemaValidation };

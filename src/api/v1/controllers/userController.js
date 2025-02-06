@@ -1,14 +1,16 @@
 const path = require("path");
-const checkUser = require(path.resolve("src/api/v1/Validators/userValidator"));
+const validator = require(path.resolve("src/api/v1/Validators/userValidator"));
 const User = require(path.resolve("src/api/v1/models/User"));
 const mongoose = require("mongoose");
 const bcrypt = require("bcrypt");
 const saltRounds = 10;
 
 exports.createUser = async (req, res) => {
-  const validationResult = checkUser(req.body);
+  const validationResult = validator.checkUser(req.body);
   if (validationResult !== true) {
-    return res.status(422).json(validationResult);
+    return res
+      .status(422)
+      .json({ message: "خطای اعتبارسنجی", errors: validationResult });
   }
   const { full_name, email, password } = req.body;
   try {
@@ -89,5 +91,39 @@ exports.countUsers = async (req, res) => {
     return res
       .status(500)
       .json({ message: "خطا در سرور", error: error.message });
+  }
+};
+
+exports.updateUser = async (req, res) => {
+  try {
+    const id = req.params.id;
+    const idValidationResult = mongoose.Types.ObjectId.isValid(id);
+    if (!idValidationResult) {
+      return res.status(422).json({ message: "ایدی اشتباه می‌باشد" });
+    }
+
+    const fieldsToValidate = Object.keys(req.body).reduce((acc, key) => {
+      if (validator.userSchemaValidation[key]) {
+        acc[key] = validator.userSchemaValidation[key];
+      }
+      return acc;
+    }, {});
+
+    const checkPartial = validator.v.compile(fieldsToValidate);
+    const validationErrors = checkPartial(req.body);
+    if (validationErrors !== true) {
+      return res
+        .status(422)
+        .json({ message: "خطای اعتبارسنجی", errors: validationErrors });
+    }
+
+    const user = await User.findByIdAndUpdate(id, req.body, { new: true });
+
+    if (!user) {
+      return res.status(404).json({ message: "کاربر پیدا نشد" });
+    }
+    res.status(200).json({ message: "کاربر با موفقیت به‌روزرسانی شد", user });
+  } catch (error) {
+    res.status(500).json({ message: "خطا در سرور", error: error.message });
   }
 };

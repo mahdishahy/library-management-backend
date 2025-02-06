@@ -16,5 +16,5 @@ booksRouter.get('/count', bookController.countBooks)
 booksRouter
   .route("/:id")
   .get(bookController.getOne)
-  .delete(bookController.removeBook);
+  .delete(bookController.removeBook).put(bookController.updateBook)
 module.exports = booksRouter;

@@ -10,11 +10,12 @@ usersRouter.post("/register", userController.createUser);
 
 usersRouter.get("/", userController.getAll);
 
-usersRouter.get('/count', userController.countUsers)
+usersRouter.get("/count", userController.countUsers);
 
 usersRouter
   .route("/:id")
   .get(userController.getOne)
-  .delete(userController.removeUser);
+  .delete(userController.removeUser)
+  .put(userController.updateUser);
 
 module.exports = usersRouter;
