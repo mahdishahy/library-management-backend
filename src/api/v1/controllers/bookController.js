@@ -65,11 +65,32 @@ exports.removeBook = async (req, res) => {
 
 exports.getAll = async (req, res) => {
   try {
-    const books = await Book.find();
+    let { page, limit } = req.query;
+
+    if (!page && !limit) {
+      const books = await Book.find().limit(9).sort({ createdAt: -1 });
+      if (!books.length) {
+        return res.status(404).json({ message: "هیج کتابی یافت نشد" });
+      }
+      return res.json({ books });
+    }
+
+    page = Number(page) || 1;
+    limit = Number(limit) || 9;
+    const skip = (page - 1) * limit;
+    const totalBooks = await Book.countDocuments();
+    const books = await Book.find()
+      .skip(skip)
+      .limit(limit)
+      .sort({ createdAt: -1 });
     if (!books.length) {
       return res.status(404).json({ message: "هیج کتابی یافت نشد" });
     }
-    res.json({ books });
+    res.json({
+      currentPage: page,
+      totalPages: Math.ceil(totalBooks / limit),
+      books,
+    });
   } catch (error) {
     return res
       .status(500)
