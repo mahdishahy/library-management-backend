@@ -1,126 +1,142 @@
-const url = require('url');
-const BookModel = require('./../models/Book.js');
-const bcrypt = require('bcrypt');
+const path = require("path");
+const validator = require(path.resolve("src/api/v1/Validators/bookValidator"));
+const Book = require(path.resolve("src/api/v1/models/Book"));
+const mongoose = require("mongoose");
 
-const getAll = async (req, res) => {
-    const books = await BookModel.find()
-    res.writeHead(200, { 'content-type': 'application/json' })
-    res.write(JSON.stringify(books))
-    res.end()
-}
+exports.createBook = async (req, res) => {
+  const validationResult = validator.checkBook(req.body);
+  if (validationResult !== true) {
+    return res.status(422).json(validationResult);
+  }
+  const {
+    title,
+    author,
+    publisher,
+    pages,
+    copies_available,
+    total_copies,
+    language,
+    publication_date,
+    category,
+    description = null,
+    image_url = null,
+  } = req.body;
+  try {
+    const newBook = await Book.create({
+      title,
+      author,
+      publisher,
+      pages,
+      copies_available,
+      total_copies,
+      language,
+      publication_date,
+      category,
+      description,
+      image_url,
+      free: true,
+    });
+    res.status(201).json({ message: "کتاب ثبت شد", book: newBook });
+  } catch (error) {
+    return res
+      .status(500)
+      .json({ message: "خطا در سرور", error: error.message });
+  }
+};
 
-const getBookById = async (req, res) => {
-    const parsedUrl = url.parse(req.url, true)
-    const id = parsedUrl.query.id
-    const book = await BookModel.findById(id)
-    res.writeHead(200, { 'content-type': 'application/json' })
-    res.write(JSON.stringify(book))
-    res.end()
-}
-const update = async (req, res) => {
-    const parsedUrl = url.parse(req.url, true)
-    const id = parsedUrl.query.id
-    let body = ''
-    req.on('data', (data) => {
-        body += data.toString()
-    })
-    req.on('end', async () => {
-        try {
-            const updateData = JSON.parse(body)
-            const updateResult = await BookModel.update(id, updateData)
-            res.writeHead(updateResult.success ? 200 : 404, { 'content-type': 'application/json' })
-            res.write(JSON.stringify(updateResult))
-            res.end()
-        } catch (error) {
-            res.writeHead(400, { 'content-type': 'application/json' })
-            res.write(JSON.stringify({ success: false, message: 'ورودی نامعتبر' }))
-            res.end()
-        }
-    })
-}
-
-const remove = async (req, res) => {
-    try {
-        const parsedUrl = url.parse(req.url, true)
-        const id = parsedUrl.query.id
-        const removeResult = await BookModel.remove(id)
-        res.writeHead(removeResult.success ? 200 : 404, { 'content-type': 'application/json' })
-        res.write(JSON.stringify(removeResult))
-        res.end()
-    } catch (error) {
-        res.writeHead(400, { 'content-type': 'application/json' })
-        res.write(JSON.stringify({ success: false, message: 'ورودی نامعتبر' }))
-        res.end()
+exports.removeBook = async (req, res) => {
+  try {
+    const id = req.params.id;
+    const validationResult = mongoose.Types.ObjectId.isValid(id);
+    if (!validationResult) {
+      return res.status(422).json({ message: "ایدی اشتباه می‌باشد" });
     }
-}
-
-const store = async (req, res) => {
-    try {
-        let newBookInfosBody = ''
-        req.on('data', async (data) => {
-            newBookInfosBody += data.toString()
-        })
-
-        req.on('end', async () => {
-            const {
-                title,
-                author,
-                isbn,
-                pages,
-                publisher,
-                copies_available,
-                total_copies,
-                language,
-                publication_date,
-                description,
-                category,
-                image_url } = JSON.parse(newBookInfosBody)
-
-            if (!title ||
-                !author ||
-                !isbn ||
-                !pages ||
-                !publisher ||
-                !copies_available ||
-                !total_copies ||
-                !language ||
-                !publication_date ||
-                !description ||
-                !category ||
-                !image_url
-            ) {
-                res.writeHead(400, { 'content-type': 'application/json' })
-                res.write(JSON.stringify({ success: false, message: 'تمامی فیلد ها الزامی هستند' }))
-                res.end()
-            } else {
-                const newBookData = {
-                    title,
-                    author,
-                    isbn,
-                    pages,
-                    publisher,
-                    copies_available,
-                    total_copies,
-                    language,
-                    publication_date,
-                    description,
-                    category,
-                    image_url,
-                    free: true,
-                    created_at: Date.now(),
-                    updated_at: Date.now()
-                }
-                const storeBookResult = await BookModel.store(newBookData)
-                res.writeHead(storeBookResult.success ? 201 : 400, { 'content-type': 'application/json' })
-                res.write(JSON.stringify(storeBookResult))
-                res.end()
-            }
-        })
-    } catch (error) {
-        res.writeHead(500, { 'content-type': 'application/json' })
-        res.write(JSON.stringify({ success: false, message: 'خطا در سرور' }))
-        res.end()
+    const removedBook = await Book.findByIdAndDelete(id);
+    if (!removedBook) {
+      return res.status(404).json({ message: "کتاب پیدا نشد!" });
     }
-}
+    res.status(200).json({ message: "کتاب با موفقیت حذف شد", removedBook });
+  } catch (error) {
+    return res
+      .status(500)
+      .json({ message: "خطا در سرور", error: error.message });
+  }
+};
 
-module.exports = { getAll, getBookById, update, remove, store }
+exports.getAll = async (req, res) => {
+  try {
+    const books = await Book.find();
+    if (!books.length) {
+      return res.status(404).json({ message: "هیج کتابی یافت نشد" });
+    }
+    res.json({ books });
+  } catch (error) {
+    return res
+      .status(500)
+      .json({ message: "خطا در سرور", error: error.message });
+  }
+};
+
+exports.getOne = async (req, res) => {
+  try {
+    const id = req.params.id;
+    const validationResult = mongoose.Types.ObjectId.isValid(id);
+    if (!validationResult) {
+      return res.status(422).json({ message: "ایدی اشتباه می‌باشد" });
+    }
+    const book = await Book.findById(id);
+    if (!book) {
+      return res.status(404).json({ message: "کتاب پیدا نشد" });
+    }
+    res.json({ book });
+  } catch (error) {
+    return res
+      .status(500)
+      .json({ message: "خطا در سرور", error: error.message });
+  }
+};
+
+exports.countBooks = async (req, res) => {
+  try {
+    const count = await Book.countDocuments();
+    res.status(200).json({ totalBooks: count });
+  } catch (error) {
+    return res
+      .status(500)
+      .json({ message: "خطا در سرور", error: error.message });
+  }
+};
+
+exports.updateBook = async (req, res) => {
+  try {
+    const id = req.params.id;
+    const idValidationResult = mongoose.Types.ObjectId.isValid(id);
+    if (!idValidationResult) {
+      return res.status(422).json({ message: "ایدی اشتباه می‌باشد" });
+    }
+
+    const fieldsToValidate = Object.keys(req.body).reduce((acc, key) => {
+      if (validator.bookSchemaValidation[key]) {
+        acc[key] = validator.bookSchemaValidation[key];
+      }
+      return acc;
+    }, {});
+
+    const checkPartial = validator.v.compile(fieldsToValidate);
+    const validationErrors = checkPartial(req.body);
+    if (validationErrors !== true) {
+      return res
+        .status(422)
+        .json({ message: "خطای اعتبارسنجی", errors: validationErrors });
+    }
+
+    const book = await Book.findByIdAndUpdate(id, req.body, { new: true });
+
+    if (!book) {
+      return res.status(404).json({ message: "کتاب پیدا نشد" });
+    }
+    res.status(200).json({ message: "کتاب با موفقیت به‌روزرسانی شد", book });
+  } catch (error) {
+    res.status(500).json({ message: "خطا در سرور", error: error.message });
+  }
+};

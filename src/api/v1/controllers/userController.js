@@ -1,223 +1,129 @@
-const url = require("url");
-const UserModel = require("./../models/User.js");
+const path = require("path");
+const validator = require(path.resolve("src/api/v1/Validators/userValidator"));
+const User = require(path.resolve("src/api/v1/models/User"));
+const mongoose = require("mongoose");
 const bcrypt = require("bcrypt");
+const saltRounds = 10;
 
-const getAll = async (req, res) => {
-  const users = await UserModel.find();
-  res.writeHead(200, { "content-type": "application/json" });
-  res.write(JSON.stringify(users));
-  res.end();
-};
-
-const getUserById = async (req, res) => {
-  const parsedUrl = url.parse(req.url, true);
-  const id = parsedUrl.query.id;
-  const user = await UserModel.findById(id);
-  res.writeHead(200, { "content-type": "application/json" });
-  res.write(JSON.stringify(user));
-  res.end();
-};
-
-const update = async (req, res) => {
-  const parsedUrl = url.parse(req.url, true);
-  const id = parsedUrl.query.id;
-  let body = "";
-  req.on("data", (data) => {
-    body += data.toString();
-  });
-  req.on("end", async () => {
-    try {
-      const updateData = JSON.parse(body);
-      const updateResult = await UserModel.update(id, updateData);
-      res.writeHead(updateResult.success ? 200 : 404, {
-        "content-type": "application/json",
-      });
-      res.write(JSON.stringify(updateResult));
-      res.end();
-    } catch (error) {
-      res.writeHead(400, { "content-type": "application/json" });
-      res.write(JSON.stringify({ success: false, message: "ورودی نامعتبر" }));
-      res.end();
-    }
-  });
-};
-
-const remove = async (req, res) => {
+exports.createUser = async (req, res) => {
+  const validationResult = validator.checkUser(req.body);
+  if (validationResult !== true) {
+    return res
+      .status(422)
+      .json({ message: "خطای اعتبارسنجی", errors: validationResult });
+  }
+  const { full_name, email, password } = req.body;
   try {
-    const parsedUrl = url.parse(req.url, true);
-    const id = parsedUrl.query.id;
-    const removeResult = await UserModel.remove(id);
-    res.writeHead(removeResult.success ? 200 : 404, {
-      "content-type": "application/json",
+    const newUser = await User.create({
+      full_name,
+      email,
+      password: await bcrypt.hash(password, saltRounds),
+      address: null,
+      phone_number: null,
+      membership: false,
+      role: "USER",
     });
-    res.write(JSON.stringify(removeResult));
-    res.end();
+    res.status(201).json({ message: "کاربر ثبت شد", user: newUser });
   } catch (error) {
-    res.writeHead(400, { "content-type": "application/json" });
-    res.write(JSON.stringify({ success: false, message: "ورودی نامعتبر" }));
-    res.end();
+    return res
+      .status(500)
+      .json({ message: "خطا در سرور", error: error.message });
   }
 };
 
-const store = async (req, res) => {
+exports.removeUser = async (req, res) => {
   try {
-    let newUserInfosBody = "";
-    req.on("data", async (data) => {
-      newUserInfosBody += data.toString();
-    });
-
-    req.on("end", async () => {
-      const {
-        full_name,
-        email,
-        password,
-        address = null,
-        phone_number = null,
-      } = JSON.parse(newUserInfosBody);
-      const saltRounds = 10;
-      if (!full_name || !email || !password) {
-        res.writeHead(400, { "content-type": "application/json" });
-        res.write(
-          JSON.stringify({
-            success: false,
-            message: "نام، ایمیل و رمزعبوری الزامی هستند",
-          })
-        );
-        res.end();
-      } else {
-        const isExistEmail = await UserModel.findByEmail(email);
-        if (isExistEmail) {
-          res.writeHead(409, { "content-type": "application/json" });
-          res.write(
-            JSON.stringify({
-              success: false,
-              message: "ایمیل از قبل وجود دارد",
-            })
-          );
-          res.end();
-        } else {
-          const newUserData = {
-            full_name,
-            email,
-            password: await bcrypt.hash(password, saltRounds),
-            address,
-            phone_number,
-            role: "USER",
-            memebership: false,
-            created_at: Date.now(),
-            updated_at: Date.now(),
-          };
-          const storeUserResult = await UserModel.store(newUserData);
-          res.writeHead(storeUserResult.success ? 201 : 400, {
-            "content-type": "application/json",
-          });
-          res.write(JSON.stringify(storeUserResult));
-          res.end();
-        }
-      }
-    });
+    const id = req.params.id;
+    const validationResult = mongoose.Types.ObjectId.isValid(id);
+    if (!validationResult) {
+      return res.status(422).json({ message: "ایدی اشتباه می‌باشد" });
+    }
+    const removedUser = await User.findByIdAndDelete(id);
+    if (!removedUser) {
+      return res.status(404).json({ message: "کاربر پیدا نشد!" });
+    }
+    res.status(200).json({ message: "کاربر با موفقیت حذف شد", removedUser });
   } catch (error) {
-    res.writeHead(500, { "content-type": "application/json" });
-    res.write(JSON.stringify({ success: false, message: "خطا در سرور" }));
-    res.end();
+    return res
+      .status(500)
+      .json({ message: "خطا در سرور", error: error.message });
   }
 };
 
-const login = async (req, res) => {
-  let buffer = "";
-  req.on("data", (data) => {
-    buffer += data.toString();
-  });
-  req.on("end", async () => {
-    const { email, password } = JSON.parse(buffer);
-
-    if (!email || !password) {
-      res.writeHead(400, { "Content-Type": "application/json" });
-      res.write(
-        JSON.stringify({
-          success: false,
-          message: "فیلد ایمیل و رمزعبور الزامی است",
-        })
-      );
-      return res.end();
+exports.getAll = async (req, res) => {
+  try {
+    const users = await User.find();
+    if (!users.length) {
+      return res.status(404).json({ message: "هیج کاربری یافت نشد" });
     }
+    res.json({ users });
+  } catch (error) {
+    return res
+      .status(500)
+      .json({ message: "خطا در سرور", error: error.message });
+  }
+};
 
-    const user = await UserModel.findUser({ email });
+exports.getOne = async (req, res) => {
+  try {
+    const id = req.params.id;
+    const validationResult = mongoose.Types.ObjectId.isValid(id);
+    if (!validationResult) {
+      return res.status(422).json({ message: "ایدی اشتباه می‌باشد" });
+    }
+    const user = await User.findById(id);
     if (!user) {
-      res.writeHead(404, { "Content-Type": "application/json" });
-      res.write(
-        JSON.stringify({
-          success: false,
-          message: "کابری با این اطلاعات یافت نشد",
-        })
-      );
-      return res.end();
+      return res.status(404).json({ message: "کاربر پیدا نشد" });
     }
-
-    const isPasswordValid = await bcrypt.compare(password, user.password);
-    if (!isPasswordValid) {
-      res.writeHead(401, { "Content-Type": "application/json" });
-      res.write(
-        JSON.stringify({ success: true, message: "ایمیل یا رمزعبور اشتباه" })
-      );
-      return res.end();
-    }
-
-    await UserModel.updateUserLoginStatus(email, true);
-    res.writeHead(200, { "Content-Type": "application/json" });
-    res.write(JSON.stringify({ success: false, message: "ورود انجام شد" }));
-    return res.end();
-  });
-};
-
-const logout = async (req, res) => {
-  let body = "";
-  req.on("data", (data) => {
-    body += data.toString();
-  });
-  req.on("end", async () => {
-    try {
-      const { email } = JSON.parse(body);
-      console.log(email);
-      const result = await UserModel.logoutUser(email);
-      res.writeHead(result.success ? 200 : 400, {
-        "content-type": "application/json",
-      });
-      res.write(
-        JSON.stringify({
-          success: true,
-          message: "خروج از حساب با موفقیت انجام شد",
-        })
-      );
-      res.end();
-    } catch (error) {
-      res.writeHead(500, { "content-type": "application/json" });
-      res.write(JSON.stringify({ success: false, message: "خطا در سرور" }));
-      res.end();
-    }
-  });
-};
-
-const getUserCount = async (req, res) => {
-  try {
-    const userCount = await UserModel.countUsers();
-    res.writeHead(200, { "content-type": "application/json" });
-    res.write(JSON.stringify({success:true, count: userCount}));
-    res.end();
+    res.json({ user });
   } catch (error) {
-    res.writeHead(500, { "content-type": "application/json" });
-    res.write(JSON.stringify({ success: false, message: "خطا در سرور" }));
-    res.end();
+    return res
+      .status(500)
+      .json({ message: "خطا در سرور", error: error.message });
   }
 };
 
-module.exports = {
-  getAll,
-  getUserById,
-  update,
-  remove,
-  store,
-  login,
-  logout,
-  getUserCount,
+exports.countUsers = async (req, res) => {
+  try {
+    const count = await User.countDocuments();
+    res.status(200).json({ totalUsers: count });
+  } catch (error) {
+    return res
+      .status(500)
+      .json({ message: "خطا در سرور", error: error.message });
+  }
+};
+
+exports.updateUser = async (req, res) => {
+  try {
+    const id = req.params.id;
+    const idValidationResult = mongoose.Types.ObjectId.isValid(id);
+    if (!idValidationResult) {
+      return res.status(422).json({ message: "ایدی اشتباه می‌باشد" });
+    }
+
+    const fieldsToValidate = Object.keys(req.body).reduce((acc, key) => {
+      if (validator.userSchemaValidation[key]) {
+        acc[key] = validator.userSchemaValidation[key];
+      }
+      return acc;
+    }, {});
+
+    const checkPartial = validator.v.compile(fieldsToValidate);
+    const validationErrors = checkPartial(req.body);
+    if (validationErrors !== true) {
+      return res
+        .status(422)
+        .json({ message: "خطای اعتبارسنجی", errors: validationErrors });
+    }
+
+    const user = await User.findByIdAndUpdate(id, req.body, { new: true });
+
+    if (!user) {
+      return res.status(404).json({ message: "کاربر پیدا نشد" });
+    }
+    res.status(200).json({ message: "کاربر با موفقیت به‌روزرسانی شد", user });
+  } catch (error) {
+    res.status(500).json({ message: "خطا در سرور", error: error.message });
+  }
 };
