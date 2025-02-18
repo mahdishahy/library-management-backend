@@ -32,7 +32,6 @@ const userSchema = mongoose.Schema(
     phone_number: {
       type: String,
       default: null,
-      unique: true,
       sparse: true,
     },
     membership: {
